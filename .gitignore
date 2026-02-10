@@ -1,0 +1,18 @@
+# Sensitive files
+*.key
+*.pem
+*password*
+secrets/
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Large files that shouldn't be tracked
+*.iso
+*.tar.gz
