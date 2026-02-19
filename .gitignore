@@ -16,3 +16,4 @@ Thumbs.db
 # Large files that shouldn't be tracked
 *.iso
 *.tar.gz
+*.env
