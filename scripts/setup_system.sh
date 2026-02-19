@@ -36,7 +36,7 @@ if [ "$EUID" -ne 0 ]; then
     error "Usage: su -c ./setup_system.sh"
 fi
 
-log "\n\t--- STARTING SETUP ---" 
+log "STARTING SETUP..." 
 
 # Test internet connection
 if ! ping -c 1 8.8.8.8 &>/dev/null; then
@@ -80,14 +80,14 @@ fi
 # Create Admin Directory
 #   Only admins group can write on this directory (rwx-rwx-r-x)
 DIR="/opt/$USER-admin"
-info -e "Creating Admin directory..."
+info "Creating Admin directory..."
 mkdir -p "$DIR"/{scripts,backups,configs}
 chown -R root:sudo "$DIR"
 chmod -R 775 "$DIR"
-log -e "Admin directory created: $DIR"
+log "Admin directory created: $DIR"
 
 # Lock the root password for security
 info "\nLocking Root password..."
-sudo passwd -l root
+# sudo passwd -l root
 
-success "\t--- SETUP COMPLETED ---" 
+success "SETUP COMPLETED" 

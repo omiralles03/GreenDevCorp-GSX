@@ -28,6 +28,7 @@ fi
 VM_NAME=${VM_NAME:-debian-gsx}
 VM_USER=${VM_USER:-gsx}
 VM_PASS=${VM_PASS:-admin}
+H_PORT=${H_PORT:-2222}
 
 if ! VBoxManage list vms | grep -q "\"$VM_NAME\""; then
     warning "VM '$VM_NAME' does not exists."
@@ -55,3 +56,10 @@ vrun() {
 vrun guestcontrol "$VM_NAME" run \
     --username "$VM_USER" --password "$VM_PASS" \
     --exe "/bin/bash" -- -c "echo '$VM_PASS' | su -c /media/sf_gsx_share/scripts/setup_system.sh"
+
+info "\nCopying SSH Keys to VM $VM_NAME..."
+ssh-copy-id -p "$H_PORT" "$VM_USER"@127.0.0.1
+
+vrun guestcontrol "$VM_NAME" run \
+    --username "$VM_USER" --password "$VM_PASS" \
+    --exe "/bin/bash" -- -c "echo '$VM_PASS' | sudo -S /media/sf_gsx_share/scripts/ssh_setup.sh"
