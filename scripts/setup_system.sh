@@ -1,6 +1,8 @@
 #!/bin/bash
 
 set -e  # Exit on error
+export PATH=$PATH:/usr/bin:/usr/sbin:/bin:/sbin # Ensure standard paths are included
+
 
 # Colors
 R='\033[0;31m' 
@@ -20,14 +22,15 @@ warning() { echo -e "${Y}[WARNING]${NC} $1\n"; }
 # Loading .env params
 ENV_FILE=".env"
 if [ -f "$ENV_FILE" ]; then
-    log "Sourcing $ENV_FILE..."
+    info "Sourcing $ENV_FILE in shared folder..."
     source "$ENV_FILE"
 else
-    log "No .env found, using internal defaults."
+    warning "No .env found, using internal defaults."
 fi
 
 VM_NAME=${VM_NAME:-debian-gsx}
-VM_USER=${VM_USER:-gsx}
+VM_USER1=${VM_USER1:-admin1}
+VM_USER2=${VM_USER2:-admin2}
 VM_PASS=${VM_PASS:-admin}
 
 # Ensure script is run as root
@@ -53,7 +56,7 @@ PACKAGES=("sudo" "git" "nftables" "openssh-server" "vim")
 apt update >/dev/null
 for pkg in "${PACKAGES[@]}"; do
     # -W (show) -f (fromat: Status) to check if already installed
-    if dpkg-query -W -f='${Status}' "$pkg" 2>dev/null | grep -q "ok installed"; then
+    if dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null | grep -q "ok installed"; then
         warning "$pkg is already installed. Skipping..."
     else
         log "Installing $pkg..."
@@ -61,25 +64,33 @@ for pkg in "${PACKAGES[@]}"; do
     fi
 done
 
-# Add user to sudo group
+# Add users to sudo group
 #   Give user all permisions on its own config file
 #   Host = ( AsAnyUser : AnyGroup) Sudo
 #   Hidden file => .rw-r--r--
 
-# USER="gsx"
-USER="$VM_USER"
+# ADMINS=("rafa" "oupman")
+ADMINS=("$VM_USER1" "$VM_USER2")
 
-if id -nG "$USER" | grep -qw "sudo"; then
-    warning "User $USER is already in the sudo group."
-else
-    echo "$USER ALL=(ALL:ALL) ALL" > /etc/sudoers.d/$USER
-    chmod 0440 /etc/sudoers.d/$USER
-    log "User $USER added to the sudo group."
-fi
+for USER in "${ADMINS[@]}"; do
+    if ! id "$USER" &>/dev/null; then
+        log "Creating user $USER..."
+        useradd -m -s /bin/bash "$USER"
+        echo "$USER:$VM_PASS" | chpasswd
+    fi
+    if id -nG "$USER" | grep -qw "sudo"; then
+        warning "User $USER is already in the sudo group."
+    else
+        echo "$USER ALL=(ALL:ALL) ALL" > /etc/sudoers.d/$USER
+        chmod 0440 /etc/sudoers.d/$USER
+        log "User $USER added to the sudo group."
+    fi
+done
 
 # Create Admin Directory
 #   Only admins group can write on this directory (rwx-rwx-r-x)
-DIR="/opt/$USER-admin"
+
+DIR="/opt/gsx-admin"
 info "Creating Admin directory..."
 mkdir -p "$DIR"/{scripts,backups,configs}
 chown -R root:sudo "$DIR"

@@ -26,9 +26,12 @@ else
 fi
 
 VM_NAME=${VM_NAME:-debian-gsx}
-VM_USER=${VM_USER:-gsx}
+VM_USER1=${VM_USER1:-admin1}
+VM_USER2=${VM_USER2:-admin2}
 VM_PASS=${VM_PASS:-admin}
 H_PORT=${H_PORT:-2222}
+
+ADMINS=("$VM_USER1" "$VM_USER2")
 
 if ! VBoxManage list vms | grep -q "\"$VM_NAME\""; then
     warning "VM '$VM_NAME' does not exists."
@@ -40,8 +43,15 @@ else
     fi
 fi
 
-echo "Executing setup_system.sh inside the VM..."
+#  The OS might be booting while the VM is "Running"
+info "Waiting for Guest Additions to be ready..."
+until VBoxManage guestcontrol "$VM_NAME" run --username "$VM_USER1" --password "$VM_PASS" --exe "//usr/bin/id" &>/dev/null; do
+    echo -n "."
+    sleep 5
+done
+echo -e "\n"
 
+info "Executing setup_system.sh inside the VM..."
 # Wrapper for VBoxManage
 vrun() {
     local out
@@ -54,12 +64,16 @@ vrun() {
 }
 
 vrun guestcontrol "$VM_NAME" run \
-    --username "$VM_USER" --password "$VM_PASS" \
-    --exe "/bin/bash" -- -c "echo '$VM_PASS' | su -c /media/sf_gsx_share/scripts/setup_system.sh"
+    --username "$VM_USER1" --password "$VM_PASS" \
+    --exe "//bin/bash" -- -c "echo '$VM_PASS' | su -c '//bin/bash //media/sf_gsx_share/scripts/setup_system.sh'"
 
-info "\nCopying SSH Keys to VM $VM_NAME..."
-ssh-copy-id -p "$H_PORT" "$VM_USER"@127.0.0.1
+for USER in "${ADMINS[@]}"; do
+    info "Copying SSH Public Key for $USER..." 
+    ssh-copy-id -p "$H_PORT" -o StrictHostKeyChecking=no "$USER"@127.0.0.1 &>/dev/null || warning "Failed to copy SSH key for $USER"
+done
 
 vrun guestcontrol "$VM_NAME" run \
-    --username "$VM_USER" --password "$VM_PASS" \
-    --exe "/bin/bash" -- -c "echo '$VM_PASS' | sudo -S /media/sf_gsx_share/scripts/ssh_setup.sh"
+    --username "$VM_USER1" --password "$VM_PASS" \
+    --exe "//bin/bash" -- -c "echo '$VM_PASS' | su -c /media/sf_gsx_share/scripts/ssh_setup.sh"
+
+success "System setup completed successfully!"
