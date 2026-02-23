@@ -67,9 +67,27 @@ vrun guestcontrol "$VM_NAME" run \
     --username "$VM_USER1" --password "$VM_PASS" \
     --exe "//bin/bash" -- -c "echo '$VM_PASS' | su -c '//bin/bash //media/sf_gsx_share/scripts/setup_system.sh'"
 
-for USER in "${ADMINS[@]}"; do
-    info "Copying SSH Public Key for $USER..." 
-    ssh-copy-id -p "$H_PORT" -o StrictHostKeyChecking=no "$USER"@127.0.0.1 &>/dev/null || warning "Failed to copy SSH key for $USER"
+KEY_DIR="/media/sf_gsx_share/keys"
+for key_file in "$KEY_DIR"/*.pub; do
+
+    FILENAME=$(basename "$key_file")
+    TARGET_USER=${FILENAME%%_*}"
+
+    info "Copying key $FILENAME for $TARGET_USER..." 
+
+    vrun guestcontrol "$VM_NAME" run \
+        --username "$VM_USER1" --password "$VM_PASS" \
+        --exe "/bin/bash" -- -c "echo '$VM_PASS' | sudo -S bash -c \"
+            mkdir -p /home/$TARGET_USER/.ssh
+            
+            cat $KEY_DIR/$FILENAME >> /home/$TARGET_USER/.ssh/authorized_keys
+            
+            chown -R $TARGET_USER:$TARGET_USER /home/$TARGET_USER/.ssh
+            chmod 700 /home/$TARGET_USER/.ssh
+            chmod 600 /home/$TARGET_USER/.ssh/authorized_keys
+            
+            sort -u -o /home/$TARGET_USER/.ssh/authorized_keys /home/$TARGET_USER/.ssh/authorized_keys
+        \""
 done
 
 vrun guestcontrol "$VM_NAME" run \
