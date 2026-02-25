@@ -158,7 +158,7 @@ draw_progress() {
 }
 
 start_time=$(date +%s)
-timeout=1320 # 22 minutes
+timeout=1800 # 30 minutes
 is_ready=0
 progress=0
 
