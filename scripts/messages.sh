@@ -27,3 +27,15 @@ vrun() {
     fi
     echo "$out" | grep -v "0%...10%" || true # Hide progress clutter
 }
+
+# Generic command wrapper
+run_command() {
+    local out
+    if ! out=$("$@" 2>&1); then
+        error "${out#*error: }"
+    fi
+
+    if [[ -n "$out" ]]; then
+        log "$out" | grep -v "0%...10%" || true
+    fi
+}
