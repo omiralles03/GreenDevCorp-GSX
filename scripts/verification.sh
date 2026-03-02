@@ -1,29 +1,6 @@
 #!/bin/bash
 
-# Colors
-R='\033[0;31m'
-G='\033[0;32m'
-Y='\033[1;33m'
-B='\033[0;34m'
-NC='\033[0m'
-
-# Messages Formats
-log() { echo -e "${B}[$(date +%T)]${NC} $1\n"; }
-error() {
-    echo -e "${R}[ERROR]${NC} $1\n"
-    exit 1
-}
-info() { echo -e "${B}[INFO]${NC} $1\n"; }
-success() { echo -e "${G}[SUCCESS]${NC} $1\n"; }
-warning() { echo -e "${Y}[WARNING]${NC} $1\n"; }
-
-check() {
-    if $1; then
-        success "$2"
-    else
-        error "$2"
-    fi
-}
+. messages
 
 # Loading .env params
 ENV_FILE="/media/sf_gsx_share/scripts/.env"
@@ -65,4 +42,3 @@ for USER in "$VM_USER1" "$VM_USER2"; do
 done
 
 success "\nAll verifications passed successfully!"
-
