@@ -99,7 +99,7 @@ for USER in "${ADMINS[@]}"; do
     log "$USER admin directory created: $DIR"
 done
 
-KEY_DIR="/media/sf_gsx_share/keys"
+KEY_DIR="//media/sf_gsx_share/keys"
 for key_file in "$KEY_DIR"/*.pub; do
 
     FILENAME=$(basename "$key_file")
