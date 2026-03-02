@@ -1,30 +1,7 @@
 #!/bin/bash
 
+. messages.sh
 set -e
-
-# Colors
-R='\033[0;31m' 
-G='\033[0;32m' 
-Y='\033[1;33m' 
-B='\033[0;34m' 
-NC='\033[0m'
-
-# Messages Formats
-log() { echo -e "${B}[$(date +%T)]${NC} $1\n"; }
-error() { echo -e "${R}[ERROR]${NC} $1\n"; exit 1; }
-info() { echo -e "${B}[INFO]${NC} $1\n"; }
-success() { echo -e "${G}[SUCCESS]${NC} $1\n"; }
-warning() { echo -e "${Y}[WARNING]${NC} $1\n"; }
-
-# Wrapper for VBoxManage
-vrun() {
-    local out
-    if ! out=$(VBoxManage "$@" 2>&1); then
-        echo -e "${R}[VBOX ERROR]${NC} ${out#*error: }"
-        exit 1
-    fi
-    echo "$out" | grep -v "0%...10%" || true # Hide progress clutter
-}
 
 # Loading .env params
 ENV_FILE=".env"
@@ -35,10 +12,8 @@ else
     log "No .env found, using internal defaults."
 fi
 
-
 # USE DEFAULT PARAMS IF NOT ENV FILE
 VM_NAME=${VM_NAME:-debian-gsx}
-
 
 # OTHER DEFAULT PARAMS
 VM_USER=${VM_USER1:-admin1}
@@ -55,8 +30,8 @@ HOST_NAME=${HOST_NAME:-gsx.virtualbox.org}
 # Define the search pattern for ISO file
 # Find the most recent matching file
 ISO_SEARCH_PATTERN="$ISO_PATH/debian-*-netinst.iso"
-ISO_PATH=$(ls -t $ISO_SEARCH_PATTERN 2>/dev/null | head -n 1) 
- if [ -z "$ISO_PATH" ]; then
+ISO_PATH=$(ls -t $ISO_SEARCH_PATTERN 2>/dev/null | head -n 1)
+if [ -z "$ISO_PATH" ]; then
     error "Could not find a Debian netinst ISO in "$ISO_PATH""
 else
     info "Found ISO: $ISO_PATH"
@@ -78,7 +53,7 @@ if [ -f "$CHECKSUM_FILE" ]; then
     success "ISO integrity verified.\n"
 else
     warning "No SHA256SUMS file found in $ISO_DIR. Skipping verification..."
-fi 
+fi
 
 if VBoxManage list vms | grep -q "\"$VM_NAME\""; then
     warning "VM '$VM_NAME' already exists."
@@ -94,15 +69,14 @@ if VBoxManage list vms | grep -q "\"$VM_NAME\""; then
 fi
 vrun createvm --name "$VM_NAME" --ostype "Debian_64" --register
 
-
 # Shared Folder for the initial scripts
 if [ ! -d "$SHARED_PATH" ]; then
     error "Shared folder path $SHARED_PATH does not exist"
 fi
 
 while ss -tuln | grep -q ":$H_PORT "; do
-  log "Port $H_PORT taken, trying $((H_PORT+1))..."
-  H_PORT=$((H_PORT+1))
+    log "Port $H_PORT taken, trying $((H_PORT + 1))..."
+    H_PORT=$((H_PORT + 1))
 done
 
 log "Configuring Hardware & Network..."
@@ -144,7 +118,6 @@ vrun unattended install "$VM_NAME" \
 
 log "$SUCCESS! Installation running in background. This may take a while..."
 
-
 # Simple progress bar function
 draw_progress() {
     local width=40
@@ -171,17 +144,17 @@ while [ $is_ready -eq 0 ]; do
         # Update progress based on time (simulated up to 99%)
         current_time=$(date +%s)
         elapsed=$((current_time - start_time))
-        
+
         if [ $elapsed -gt $timeout ]; then
             echo -e "\n"
             error "Installation timed out. Please check the VM manually."
         fi
-        
+
         # Calculate simulated progress (0 to 99%)
-        progress=$(( (elapsed * 99) / timeout ))
+        progress=$(((elapsed * 99) / timeout))
         [ $progress -gt 99 ] && progress=99
     fi
-    
+
     draw_progress $progress
     sleep 10
 done
@@ -196,3 +169,4 @@ if [ -f "./run_setup_system.sh" ]; then
 else
     error "run_setup_system.sh not found!"
 fi
+
