@@ -73,37 +73,9 @@ vrun guestcontrol "$VM_NAME" run \
     --username "$VM_USER1" --password "$VM_PASS" \
     --exe "//bin/bash" -- -c "echo '$VM_PASS' | su -c '//bin/bash //media/sf_gsx_share/scripts/setup_system.sh'"
 
- KEY_DIR="//media/sf_gsx_share/keys"
- for key_file in "$KEY_DIR"/*.pub; do
-
-     FILENAME=$(basename "$key_file")
-     TARGET_USER="${FILENAME%%_*}"
-
-     info "Copying key $FILENAME for $TARGET_USER..."
-
-     vrun guestcontrol "$VM_NAME" run \
-         --username "$VM_USER1" --password "$VM_PASS" \
-         --exe "//bin/bash" -- -c "echo '$VM_PASS' | sudo -S bash -c \"
-             mkdir -p /home/$TARGET_USER/.ssh
-
-             cat $KEY_DIR/$FILENAME >> /home/$TARGET_USER/.ssh/authorized_keys
-
-             chown -R $TARGET_USER:$TARGET_USER /home/$TARGET_USER/.ssh
-             chmod 700 /home/$TARGET_USER/.ssh
-             chmod 600 /home/$TARGET_USER/.ssh/authorized_keys
-
-             sort -u -o /home/$TARGET_USER/.ssh/authorized_keys /home/$TARGET_USER/.ssh/authorized_keys
-         \""
- done
-
-vrun guestcontrol "$VM_NAME" run \
-     --username "$VM_USER1" --password "$VM_PASS" \
-     --exe "//bin/bash" -- -c "echo '$VM_PASS' | su -c /media/sf_gsx_share/scripts/ssh_setup.sh"
-
 vrun guestcontrol "$VM_NAME" run \
     --username "$VM_USER1" --password "$VM_PASS" \
     --exe "//bin/bash" -- -c "echo '$VM_PASS' | su -c '/media/sf_gsx_share/scripts/backups.sh'"
-
 
 vrun guestcontrol "$VM_NAME" run \
     --username "$VM_USER1" --password "$VM_PASS" \
