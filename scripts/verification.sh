@@ -44,6 +44,7 @@ echo "--- Verification ---"
 # 1. Verificar usuarios y grupos
 check "id -u $VM_USER1" "User $VM_USER1 exists"
 check "id -u $VM_USER2" "User $VM_USER2 exists"
+# Review this line...
 check "grep -q '^sudo:' /etc/group | grep -q '$VM_USER1\|$VM_USER2'" "Users are in sudo group"
 
 # 2. Verificar estructura de directorios de administración
@@ -64,3 +65,4 @@ for USER in "$VM_USER1" "$VM_USER2"; do
 done
 
 success "\nAll verifications passed successfully!"
+
