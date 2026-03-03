@@ -1,0 +1,172 @@
+#!/bin/bash
+
+. messages.sh
+set -e
+
+# Loading .env params
+ENV_FILE=".env"
+if [ -f "$ENV_FILE" ]; then
+    log "Sourcing $ENV_FILE..."
+    source "$ENV_FILE"
+else
+    log "No .env found, using internal defaults."
+fi
+
+# USE DEFAULT PARAMS IF NOT ENV FILE
+VM_NAME=${VM_NAME:-debian-gsx}
+
+# OTHER DEFAULT PARAMS
+VM_USER=${VM_USER1:-admin1}
+VM_USER2=${VM_USER2:-admin2}
+VM_PASS=${VM_PASS:-admin}
+VM_RAM=${VM_RAM:-2048}
+VM_CPUS=${VM_CPUS:-1}
+H_PORT=${H_PORT:-2222}
+ISO_PATH=${ISO_PATH}
+DISK_SIZE=${DISK_SIZE:-20480}
+SHARED_PATH=${SHARED_PATH}
+HOST_NAME=${HOST_NAME:-gsx.virtualbox.org}
+
+# Define the search pattern for ISO file
+# Find the most recent matching file
+ISO_SEARCH_PATTERN="$ISO_PATH/debian-*-netinst.iso"
+ISO_PATH=$(ls -t $ISO_SEARCH_PATTERN 2>/dev/null | head -n 1)
+if [ -z "$ISO_PATH" ]; then
+    error "Could not find a Debian netinst ISO in "$ISO_PATH""
+else
+    info "Found ISO: $ISO_PATH"
+fi
+
+# Optional: Verify CHECKSUM
+info "Verifying ISO Integrity..."
+ISO_DIR=$(dirname "$ISO_PATH")
+ISO_FILE=$(basename "$ISO_PATH")
+CHECKSUM_FILE="$ISO_DIR/SHA256SUMS"
+
+if [ -f "$CHECKSUM_FILE" ]; then
+
+    # Use grep to find the specific ISO hash and check it
+    # Format: cd into dir to avoid path issues with sha256sum --check
+    (cd "$ISO_DIR" && grep "$ISO_FILE" SHA256SUMS | sha256sum -c) || {
+        error "Checksum failed! The ISO might be corrupted or tampered with."
+    }
+    success "ISO integrity verified.\n"
+else
+    warning "No SHA256SUMS file found in $ISO_DIR. Skipping verification..."
+fi
+
+if VBoxManage list vms | grep -q "\"$VM_NAME\""; then
+    warning "VM '$VM_NAME' already exists."
+    log "Cleaning up old VM '$VM_NAME'..."
+
+    # IF the VM already exists and its running (script cancelled or VM running)
+    # Force stop the VM and Remove it
+    if VBoxManage showvminfo "$VM_NAME" --machinereadable | grep -q 'VMState="running"'; then
+        vrun controlvm "$VM_NAME" poweroff
+    fi
+    vrun unregistervm "$VM_NAME" --delete
+    log "Removed old VM '$VM_NAME'."
+fi
+vrun createvm --name "$VM_NAME" --ostype "Debian_64" --register
+
+# Shared Folder for the initial scripts
+if [ ! -d "$SHARED_PATH" ]; then
+    error "Shared folder path $SHARED_PATH does not exist"
+fi
+
+while ss -tuln | grep -q ":$H_PORT "; do
+    log "Port $H_PORT taken, trying $((H_PORT + 1))..."
+    H_PORT=$((H_PORT + 1))
+done
+
+log "Configuring Hardware & Network..."
+
+vrun modifyvm "$VM_NAME" \
+    --cpus "$VM_CPUS" --memory "$VM_RAM" \
+    --vram 128 --graphicscontroller vmsvga \
+    --mouse usbtablet --hwvirtex on \
+    --nested-paging on \
+    --nic1 nat --natpf1 "guestssh,tcp,,$H_PORT,,22"
+
+log "Attaching Storage..."
+
+vrun storagectl "$VM_NAME" --name "SATA Controller" --add sata \
+    --controller IntelAhci --portcount 2
+
+vrun createmedium disk --filename "$HOME/VirtualBox VMs/$VM_NAME/$VM_NAME.vdi" \
+    --size "$DISK_SIZE" --format VDI
+
+vrun storageattach "$VM_NAME" \
+    --storagectl "SATA Controller" --port 0 --device 0 \
+    --type hdd --nonrotational on \
+    --medium "$HOME/VirtualBox VMs/$VM_NAME/$VM_NAME.vdi"
+
+vrun storageattach "$VM_NAME" \
+    --storagectl "SATA Controller" --port 1 --device 0 \
+    --type dvddrive --medium "$ISO_PATH"
+
+log "Adding Shared Folder..."
+vrun sharedfolder add "$VM_NAME" --name "gsx_share" --hostpath "$SHARED_PATH" --automount
+
+log "Starting Unattended Installation (Headless)..."
+vrun unattended install "$VM_NAME" \
+    --iso="$ISO_PATH" \
+    --user="$VM_USER1" --password="$VM_PASS" \
+    --hostname="$VM_NAME.$HOST_NAME" \
+    --install-additions \
+    --start-vm=headless
+
+log "$SUCCESS! Installation running in background. This may take a while..."
+
+# Simple progress bar function
+draw_progress() {
+    local width=40
+    local perc=$1
+    local filled=$((perc * width / 100))
+    local empty=$((width - filled))
+    printf "\r${B}[INFO]${NC} Progress: ["
+    printf "%${filled}s" | tr ' ' '#'
+    printf "%${empty}s" | tr ' ' '-'
+    printf "] %d%%" "$perc"
+}
+
+start_time=$(date +%s)
+timeout=1800 # 30 minutes
+is_ready=0
+progress=0
+
+while [ $is_ready -eq 0 ]; do
+    # Try to execute a simple command inside the VM
+    if VBoxManage guestcontrol "$VM_NAME" run --username "$VM_USER1" --password "$VM_PASS" --exe "//usr/bin/id" &>/dev/null; then
+        is_ready=1
+        progress=100
+    else
+        # Update progress based on time (simulated up to 99%)
+        current_time=$(date +%s)
+        elapsed=$((current_time - start_time))
+
+        if [ $elapsed -gt $timeout ]; then
+            echo -e "\n"
+            error "Installation timed out. Please check the VM manually."
+        fi
+
+        # Calculate simulated progress (0 to 99%)
+        progress=$(((elapsed * 99) / timeout))
+        [ $progress -gt 99 ] && progress=99
+    fi
+
+    draw_progress $progress
+    sleep 10
+done
+
+echo -e "\n"
+success "Installation finished! VM is ready."
+
+# --- Automatic handover to next script ---
+if [ -f "./run_setup_system.sh" ]; then
+    info "Launching system configuration script..."
+    ./run_setup_system.sh
+else
+    error "run_setup_system.sh not found!"
+fi
+
