@@ -1,10 +1,11 @@
 #!/bin/bash
 
-. messages.sh
+BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "$BASE_DIR/../core/messages.sh"
 set -e
 
 # Loading .env params
-ENV_FILE=".env"
+ENV_FILE="$BASE_DIR/../core/.env"
 if [ -f "$ENV_FILE" ]; then
     log "Sourcing $ENV_FILE..."
     source "$ENV_FILE"
@@ -162,6 +163,9 @@ done
 echo -e "\n"
 success "Installation finished! VM is ready."
 
+info "Creating snapshot..."
+VBoxManage snapshot "VM_NAME" take "Snapshot_Name" --description "Clean state post-install"
+
 # --- Automatic handover to next script ---
 if [ -f "./run_setup_system.sh" ]; then
     info "Launching system configuration script..."
@@ -169,4 +173,3 @@ if [ -f "./run_setup_system.sh" ]; then
 else
     error "run_setup_system.sh not found!"
 fi
-

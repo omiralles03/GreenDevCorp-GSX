@@ -1,5 +1,6 @@
 #!/bin/bash
-. messages.sh
+
+. "/usr/local/lib/gsx-messages.sh"
 set -e
 
 BACKUP_DIR="/opt/backups"

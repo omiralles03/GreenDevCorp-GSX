@@ -1,5 +1,5 @@
 #!/bin/bash
-. "$(dirname "$0")/../messages.sh"
+. "/usr/local/lib/gsx-messages.sh"
 
 # Ensure script is run as root
 # Ensure script is run as root when run manually
@@ -10,8 +10,8 @@ fi
 
 info "Configuring Backup Systemd Timer..."
 
-SERVICE_SRC="/media/sf_gsx_share/configs/systemd/admin_backup.service"
-TIMER_SRC="/media/sf_gsx_share/configs/systemd/admin_backup.timer"
+SERVICE_SRC="/opt/admin/configs/systemd/admin_backup.service"
+TIMER_SRC="/opt/admin/configs/systemd/admin_backup.timer"
 SYSTEMD_DIR="/etc/systemd/system"
 
 # Copy files to system
