@@ -1,11 +1,11 @@
 #!/bin/bash
 
-. "/usr/local/lib/gsx-messages.sh":
+. "/usr/local/lib/gsx-messages.sh"
 
-# Ensure script is run as root when run manually
+# Ensure script is run with elevated privileges
 if [ "$EUID" -ne 0 ]; then
-    warning "This script must be run as root"
-    error "Usage: su -c ./setup_system.sh"
+    warning "This script must be run as sudo"
+    error "Usage: sudo ./setup_system.sh"
 fi
 
 info "Starting Nginx Service Setup..."
