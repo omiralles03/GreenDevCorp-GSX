@@ -164,7 +164,7 @@ echo -e "\n"
 success "Installation finished! VM is ready."
 
 info "Creating snapshot..."
-VBoxManage snapshot "VM_NAME" take "Snapshot_Name" --description "Clean state post-install"
+VBoxManage snapshot "$VM_NAME" take "Clean Install" --description "Clean state post-install"
 
 # --- Automatic handover to next script ---
 if [ -f "./run_setup_system.sh" ]; then
