@@ -85,13 +85,13 @@ for USER in "${ADMINS[@]}"; do
 done
 
 info "Copying files to admin directory"
-mkdir -p "/opt/admin/{scripts,backups,configs}"
-chown -R root:sudo /opt/admin
-chmod -R 775 /opt/admin
-cp -r /tmp/gsx-bootstrap/scripts/. /opt/admin/scripts
-cp -r /tmp/gsx-bootstrap/configs/. /opt/admin/configs
+mkdir -p /opt/admin
+cp -r /tmp/gsx-bootstrap/scripts /opt/admin
+cp -r /tmp/gsx-bootstrap/configs /opt/admin
 rm -rf /opt/admin/scripts/bootstrap
 rm -rf /opt/admin/scripts/core
+chown -R root:sudo /opt/admin
+chmod -R 775 /opt/admin
 
 KEY_DIR="/tmp/gsx-bootstrap/keys"
 for key_file in "$KEY_DIR"/*.pub; do
@@ -109,9 +109,5 @@ for key_file in "$KEY_DIR"/*.pub; do
 done
 
 /bin/bash /tmp/gsx-bootstrap/scripts/bootstrap/ssh_setup.sh
-
-# Lock the root password for security
-info "\nLocking Root password..."
-# sudo passwd -l root
 
 success "SETUP COMPLETED"
