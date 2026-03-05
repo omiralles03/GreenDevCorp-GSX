@@ -106,9 +106,6 @@ vrun storageattach "$VM_NAME" \
     --storagectl "SATA Controller" --port 1 --device 0 \
     --type dvddrive --medium "$ISO_PATH"
 
-log "Adding Shared Folder..."
-vrun sharedfolder add "$VM_NAME" --name "gsx_share" --hostpath "$SHARED_PATH" --automount
-
 log "Starting Unattended Installation (Headless)..."
 vrun unattended install "$VM_NAME" \
     --iso="$ISO_PATH" \
