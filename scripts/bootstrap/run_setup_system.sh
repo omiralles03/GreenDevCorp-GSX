@@ -74,7 +74,7 @@ echo -n
 info "Copying messages.sh to /usr/local/lib ..."
 vrun guestcontrol "$VM_NAME" run \
     --username "$VM_USER1" --password "$VM_PASS" \
-    --exe "/bin/bash" -- -c "echo '$VM_PASS' | su -c 'cp /tmp/gsx-bootstrap/scripts/core/messages.sh /usr/local/lib/gsx-messages.sh'"
+    --exe "/bin/bash" -- -c "echo '$VM_PASS' | su -c 'cp /tmp/gsx-bootstrap/scripts/core/messages.sh /usr/local/lib/gsx-messages.sh && chmod 644 /usr/local/lib/gsx-messages.sh'"
 
 echo -e
 info "Removing temporal folder..."
@@ -82,6 +82,12 @@ info "Removing temporal folder..."
 vrun guestcontrol "$VM_NAME" run \
     --username "$VM_USER1" --password "$VM_PASS" \
     --exe "/bin/rm" -- -rf "/tmp/gsx-bootstrap"
+
+# Lock the root password for security
+info "\nLocking Root password..."
+vrun guestcontrol "$VM_NAME" run \
+    --username "$VM_USER1" --password "$VM_PASS" \
+    --exe "/bin/bash" -- -c "echo '$VM_PASS' | su -c 'passwd -l root'"
 
 echo -e
 success "System setup completed successfully!"
