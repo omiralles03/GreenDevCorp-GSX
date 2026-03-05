@@ -1,0 +1,11 @@
+[Unit]
+Description=Runs Admin Backup Daily at 05:00 AM
+Requires=admin_backup.service
+
+[Timer]
+# Execute every day at 5 AM
+OnCalendar=*-*-* 05:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

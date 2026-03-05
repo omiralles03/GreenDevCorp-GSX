@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail #Exit on error
 
-. messages.sh
+. "/tmp/gsx-bootstrap/scripts/core/messages.sh"
 
 #Las comprovaciones de instalacion se hacen antes
 #lgo todo esto se quita es para acordarme de pq pongo las cosas

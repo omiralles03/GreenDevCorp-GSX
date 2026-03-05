@@ -1,0 +1,11 @@
+[Unit]
+Description=Admin Backup Service
+After=network.target
+Wants=network-online.target #for week 5
+
+[Service]
+Type=oneshot
+User=root 
+ExecStart=/bin/bash /media/sf_gsx_share/scripts/backups.sh
+StandardOutput=journal
+StandardError=journal

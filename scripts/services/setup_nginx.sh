@@ -1,11 +1,11 @@
 #!/bin/bash
 
-. "$(dirname "$0")/../messages.sh"
+. "/usr/local/lib/gsx-messages.sh"
 
-# Ensure script is run as root when run manually
+# Ensure script is run with elevated privileges
 if [ "$EUID" -ne 0 ]; then
-    warning "This script must be run as root"
-    error "Usage: su -c ./setup_system.sh"
+    warning "This script must be run as sudo"
+    error "Usage: sudo ./setup_system.sh"
 fi
 
 info "Starting Nginx Service Setup..."
@@ -23,7 +23,7 @@ run_command systemctl enable nginx
 DROPIN_DIR="/etc/systemd/system/nginx.service.d"
 mkdir -p "$DROPIN_DIR"
 
-CONFIG_SOURCE="/media/sf_gsx_share/configs/nginx/restart.conf"
+CONFIG_SOURCE="/opt/admin/configs/nginx/restart.conf"
 
 if [ -f "$CONFIG_SOURCE" ]; then
     run_command cp "$CONFIG_SOURCE" "$DROPIN_DIR/restart.conf"
