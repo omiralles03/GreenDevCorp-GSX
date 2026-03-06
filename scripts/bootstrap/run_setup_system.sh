@@ -36,7 +36,7 @@ fi
 
 #  The OS might be booting while the VM is "Running"
 info "Waiting for Guest Additions to be ready..."
-until VBoxManage guestcontrol "$VM_NAME" run --username "$VM_USER1" --password "$VM_PASS" --exe "/usr/bin/id" &>/dev/null; do
+until VBoxManage guestcontrol "$VM_NAME" run --username "$VM_USER1" --password "$VM_PASS" --exe "//usr/bin/id" &>/dev/null; do
     echo -n "."
     sleep 5
 done
@@ -44,13 +44,16 @@ echo -e "\n"
 
 # ---- TEMPORAL INSTALLATION FOLDER ----
 
-info "Creating temporal installation folder"
-
-vrun guestcontrol "$VM_NAME" mkdir "/tmp/gsx-bootstrap" \
-    --username "$VM_USER1" --password "$VM_PASS"
+if ! VBoxManage guestcontrol "$VM_NAME" stat --username "$VM_USER1" --password "$VM_PASS" "//tmp/gsx-bootstrap" &>/dev/null; then
+    info "Creating temporary installation folder..."
+    vrun guestcontrol "$VM_NAME" mkdir "//tmp/gsx-bootstrap" \
+        --username "$VM_USER1" --password "$VM_PASS"
+else
+    warning "Temporary installation folder already exists."
+fi
 
 vrun guestcontrol "$VM_NAME" copyto "$SHARED_PATH" \
-    --target-directory "/tmp/gsx-bootstrap" \
+    --target-directory "//tmp/gsx-bootstrap" \
     --username "$VM_USER1" --password "$VM_PASS" \
     --recursive
 
@@ -63,31 +66,45 @@ info "Executing setup_system.sh inside the VM..."
 
 vrun guestcontrol "$VM_NAME" run \
     --username "$VM_USER1" --password "$VM_PASS" \
-    --exe "/bin/bash" -- -c "echo '$VM_PASS' | su -c 'bash /tmp/gsx-bootstrap/scripts/bootstrap/setup_system.sh'"
+    --exe "//bin/bash" -- -c "echo '$VM_PASS' | su -c 'bash //tmp/gsx-bootstrap/scripts/bootstrap/setup_system.sh'"
+success "System setup_system executed successfully."
 
 vrun guestcontrol "$VM_NAME" run \
     --username "$VM_USER1" --password "$VM_PASS" \
-    --exe "/bin/bash" -- -c "echo '$VM_PASS' | su -c 'bash /tmp/gsx-bootstrap/scripts/bootstrap/backups.sh'"
+    --exe "//bin/bash" -- -c "echo '$VM_PASS' | su -c 'bash //tmp/gsx-bootstrap/scripts/bootstrap/backups.sh'"
+success "System setup backups executed successfully."
 
 # ----- COPY FILES TO ADMIN DIRECTORIES -----
 echo -n
 info "Copying messages.sh to /usr/local/lib ..."
 vrun guestcontrol "$VM_NAME" run \
     --username "$VM_USER1" --password "$VM_PASS" \
-    --exe "/bin/bash" -- -c "echo '$VM_PASS' | su -c 'cp /tmp/gsx-bootstrap/scripts/core/messages.sh /usr/local/lib/gsx-messages.sh && chmod 644 /usr/local/lib/gsx-messages.sh'"
+    --exe "//bin/bash" -- -c "echo '$VM_PASS' | su -c 'cp //tmp/gsx-bootstrap/scripts/core/messages.sh //usr/local/lib/gsx-messages.sh && chmod 644 //usr/local/lib/gsx-messages.sh'"
 
 echo -e
+
+# ---- WEEK 2 SETUP ----
+vrun guestcontrol "$VM_NAME" run \
+    --username "$VM_USER1" --password "$VM_PASS" \
+    --exe "//bin/bash" -- -c "echo '$VM_PASS' | su -c 'bash //tmp/gsx-bootstrap/scripts/bootstrap/setup_services.sh'"
+success "System setup services executed successfully."
+
+
+#---- CLEANUP ----
 info "Removing temporal folder..."
 
 vrun guestcontrol "$VM_NAME" run \
     --username "$VM_USER1" --password "$VM_PASS" \
-    --exe "/bin/rm" -- -rf "/tmp/gsx-bootstrap"
+    --exe "//bin/rm" -- -rf "//tmp/gsx-bootstrap"
+
 
 # Lock the root password for security
+
+
 info "\nLocking Root password..."
 vrun guestcontrol "$VM_NAME" run \
     --username "$VM_USER1" --password "$VM_PASS" \
-    --exe "/bin/bash" -- -c "echo '$VM_PASS' | su -c 'passwd -l root'"
+    --exe "//bin/bash" -- -c "echo '$VM_PASS' | su -c 'passwd -l root'"
 
 echo -e
 success "System setup completed successfully!"
