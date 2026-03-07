@@ -6,6 +6,6 @@ Wants=network-online.target #for week 5
 [Service]
 Type=oneshot
 User=root 
-ExecStart=/bin/bash /media/sf_gsx_share/scripts/backups.sh
+ExecStart=/bin/bash /opt/admin/scripts/services/service_backups.sh
 StandardOutput=journal
 StandardError=journal

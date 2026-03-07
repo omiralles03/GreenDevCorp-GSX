@@ -170,3 +170,7 @@ if [ -f "./run_setup_system.sh" ]; then
 else
     error "run_setup_system.sh not found!"
 fi
+
+info "Creating snapshot..."
+VBoxManage snapshot "$VM_NAME" take "Clean setup" --description "Clean setup state"
+
