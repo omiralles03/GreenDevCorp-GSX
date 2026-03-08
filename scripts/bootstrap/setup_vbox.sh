@@ -1,10 +1,11 @@
 #!/bin/bash
 
-. messages.sh
+BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "$BASE_DIR/../core/messages.sh"
 set -e
 
 # Loading .env params
-ENV_FILE=".env"
+ENV_FILE="$BASE_DIR/../core/.env"
 if [ -f "$ENV_FILE" ]; then
     log "Sourcing $ENV_FILE..."
     source "$ENV_FILE"
@@ -105,9 +106,6 @@ vrun storageattach "$VM_NAME" \
     --storagectl "SATA Controller" --port 1 --device 0 \
     --type dvddrive --medium "$ISO_PATH"
 
-log "Adding Shared Folder..."
-vrun sharedfolder add "$VM_NAME" --name "gsx_share" --hostpath "$SHARED_PATH" --automount
-
 log "Starting Unattended Installation (Headless)..."
 vrun unattended install "$VM_NAME" \
     --iso="$ISO_PATH" \
@@ -162,6 +160,9 @@ done
 echo -e "\n"
 success "Installation finished! VM is ready."
 
+info "Creating snapshot..."
+VBoxManage snapshot "$VM_NAME" take "Clean Install" --description "Clean state post-install"
+
 # --- Automatic handover to next script ---
 if [ -f "./run_setup_system.sh" ]; then
     info "Launching system configuration script..."
@@ -169,4 +170,7 @@ if [ -f "./run_setup_system.sh" ]; then
 else
     error "run_setup_system.sh not found!"
 fi
+
+info "Creating snapshot..."
+VBoxManage snapshot "$VM_NAME" take "Clean setup" --description "Clean setup state"
 

@@ -1,0 +1,11 @@
+[Unit]
+Description=Admin Backup Service
+After=network.target
+Wants=network-online.target #for week 5
+
+[Service]
+Type=oneshot
+User=root 
+ExecStart=/bin/bash /opt/admin/scripts/services/service_backups.sh
+StandardOutput=journal
+StandardError=journal

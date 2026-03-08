@@ -1,12 +1,12 @@
 #!/bin/bash
 
-. messages.sh
+. "/tmp/gsx-bootstrap/scripts/core/messages.sh"
 
 set -e                                          # Exit on error
 export PATH=$PATH:/usr/bin:/usr/sbin:/bin:/sbin # Ensure standard paths are included
 
 # Loading .env params
-ENV_FILE="/media/sf_gsx_share/scripts/.env"
+ENV_FILE="/tmp/gsx-bootstrap/scripts/core/.env"
 if [ -f "$ENV_FILE" ]; then
     info "Sourcing $ENV_FILE in shared folder..."
     source "$ENV_FILE"
@@ -37,7 +37,7 @@ fi
 # Install the required packages
 #   Perfom apt update
 #   Parse the package status and install if not already installed
-PACKAGES=("sudo" "git" "nftables" "openssh-server" "vim" "nginx")
+PACKAGES=("sudo" "git" "nftables" "openssh-server" "vim")
 
 apt update >/dev/null
 for pkg in "${PACKAGES[@]}"; do
@@ -84,7 +84,16 @@ for USER in "${ADMINS[@]}"; do
     log "$USER admin directory created: $DIR"
 done
 
-KEY_DIR="//media/sf_gsx_share/keys"
+info "Copying files to admin directory"
+mkdir -p /opt/admin
+cp -r /tmp/gsx-bootstrap/scripts /opt/admin
+cp -r /tmp/gsx-bootstrap/configs /opt/admin
+rm -rf /opt/admin/scripts/bootstrap
+rm -rf /opt/admin/scripts/core
+chown -R root:sudo /opt/admin
+chmod -R 775 /opt/admin
+
+KEY_DIR="/tmp/gsx-bootstrap/keys"
 for key_file in "$KEY_DIR"/*.pub; do
 
     FILENAME=$(basename "$key_file")
@@ -99,10 +108,6 @@ for key_file in "$KEY_DIR"/*.pub; do
     chmod 600 /home/$TARGET_USER/.ssh/authorized_keys
 done
 
-/bin/bash /media/sf_gsx_share/scripts/ssh_setup.sh
-
-# Lock the root password for security
-info "\nLocking Root password..."
-# sudo passwd -l root
+/bin/bash /tmp/gsx-bootstrap/scripts/bootstrap/ssh_setup.sh
 
 success "SETUP COMPLETED"
