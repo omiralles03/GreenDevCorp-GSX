@@ -90,6 +90,19 @@ vrun guestcontrol "$VM_NAME" run \
 success "System setup services executed successfully."
 
 
+
+
+# ---- WEEK 4 SETUP ----
+vrun guestcontrol "$VM_NAME" run \
+    --username "$VM_USER1" --password "$VM_PASS" \
+    --exe "//bin/bash" -- -c "echo '$VM_PASS' | su -c 'bash //tmp/gsx-bootstrap/scripts/services/add_users_group.sh dev 4 greendevcorp'"
+
+vrun guestcontrol "$VM_NAME" run \
+    --username "$VM_USER1" --password "$VM_PASS" \
+    --exe "//bin/bash" -- -c "echo '$VM_PASS' | su -c 'bash //tmp/gsx-bootstrap/scripts/services/setup_secpecific_configs.sh'"
+
+success "System setup specific configurations executed successfully."
+
 #---- CLEANUP ----
 info "Removing temporal folder..."
 
