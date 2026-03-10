@@ -101,6 +101,10 @@ vrun guestcontrol "$VM_NAME" run \
     --username "$VM_USER1" --password "$VM_PASS" \
     --exe "//bin/bash" -- -c "echo '$VM_PASS' | su -c 'bash //tmp/gsx-bootstrap/scripts/services/setup_secpecific_configs.sh'"
 
+vrun guestcontrol "$VM_NAME" run \
+    --username "$VM_USER1" --password "$VM_PASS" \
+    --exe "//bin/bash" -- -c "echo '$VM_PASS' | su -c 'bash //tmp/gsx-bootstrap/scripts/tests/verification_w4.sh'"
+
 success "System setup specific configurations executed successfully."
 
 #---- CLEANUP ----

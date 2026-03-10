@@ -73,11 +73,8 @@ fi
 # Assign ownership to root and the team group
 run_command chown root:"$GROUP_NAME" "$BASE_DIR"
 
-# Apply special permissions (SGID and Sticky Bit)
-# 3 = Sticky Bit (1) + SGID (2)
-# 7 = root (rwx)
-# 7 = group (rwx)
-# 0 = others (no access)
-run_command chmod 3770 "$BASE_DIR"
+# Set permissions: SGID (Set Group ID) + Sticky Bit
+# 0755: root(rwx), grupo(r-x), otros(r-x)
+run_command chmod 0755 "$BASE_DIR"
 
 success "Shared directory $BASE_DIR successfully configured with SGID and Sticky Bit."
