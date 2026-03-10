@@ -36,4 +36,5 @@ We follow a professional **Feature Branch Workflow** to ensure code quality and 
 2. **`dev`**: Integration branch for new features.
 3. **`feat/topic`**: Isolated branches for specific task development.
 
-*For more details, see our [Workflow Documentation](./WorkFlow.md).*
+*For more details, see our [Workflow Documentation](./WORKFLOW.md).*
+
