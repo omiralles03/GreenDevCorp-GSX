@@ -49,3 +49,8 @@ run_command systemctl daemon-reload
 run_command systemctl restart limitd.service
 success "Service restored to defaults"
 run_command systemctl status limitd.service
+
+info "cgroups verification:"
+echo -e "/sys/fs/cgroup/system.slice/limitd.service/cpu.max\n"
+echo -e "usage(ms) : time(ms)\n"
+cat /sys/fs/cgroup/system.slice/limitd.service/cpu.max
