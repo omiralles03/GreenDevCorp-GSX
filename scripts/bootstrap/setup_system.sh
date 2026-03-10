@@ -66,6 +66,7 @@ for USER in "${ADMINS[@]}"; do
     if id -nG "$USER" | grep -qw "sudo"; then
         warning "User $USER is already in the sudo group."
     else
+        usermod -aG sudo "$USER"
         echo "$USER ALL=(ALL:ALL) ALL" >/etc/sudoers.d/$USER
         chmod 0440 /etc/sudoers.d/$USER
         log "User $USER added to the sudo group."

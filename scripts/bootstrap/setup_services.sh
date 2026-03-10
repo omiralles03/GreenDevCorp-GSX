@@ -10,4 +10,8 @@ bash "/tmp/gsx-bootstrap/scripts/services/setup_nginx.sh"
 # ---- Backups ----
 bash "/tmp/gsx-bootstrap/scripts/services/setup_admins_backups.sh"
 
+# ---- Limitd ----
+bash "/tmp/gsx-bootstrap/scripts/services/setup_limitd.sh"
+
 success "Services setup completed successfully."
+
