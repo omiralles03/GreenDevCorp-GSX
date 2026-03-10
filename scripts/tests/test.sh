@@ -13,4 +13,4 @@ fi
 
 vrun guestcontrol "$VM_NAME" run \
     --username "$VM_USER1" --password "$VM_PASS" \
-    --exe "//bin/bash" -- -c "echo '$VM_PASS' | sudo -S bash /opt/admin/scripts/services/check_logs.sh nginx"
+    --exe "//bin/bash" -- -c "echo '$VM_PASS' | sudo -S bash /opt/admin/scripts/tests/verification_w4.sh"
