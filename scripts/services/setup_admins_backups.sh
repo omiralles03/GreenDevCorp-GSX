@@ -7,8 +7,31 @@ if [ "$EUID" -ne 0 ]; then
     warning "This script must be run as root"
     error "Usage: su -c ./setup_system.sh"
 fi
+# Configure backup service for admin directories and simulate NAS mount
 
-info "Configuring Backup Systemd Timer..."
+info "--- CONFIGURING SIMULATED NAS MOUNT ---"
+NAS_MOUNT="/mnt/external_nas"
+
+# Create the mount point
+run_command mkdir -p "$NAS_MOUNT"
+
+# Add entry to /etc/fstab if it does not exist
+# Use type "vboxsf" (VirtualBox shared folder protocol)
+
+if ! grep -q "gsx_backups" /etc/fstab; then
+    echo "gsx_backups $NAS_MOUNT vboxsf defaults,rw 0 0" >> /etc/fstab
+    log "Added NAS mount to /etc/fstab"
+fi
+
+run_command mount -a
+
+if mount | grep -q "$NAS_MOUNT"; then
+    success "NAS successfully mounted at $NAS_MOUNT"
+else
+    error "Failed to mount the NAS. Check fstab and VirtualBox Additions."
+fi
+
+info "--- CONFIGURING BACKUP SYSTEMD TIMER ---"
 
 SERVICE_SRC="/opt/admin/configs/systemd/admin_backup.service"
 TIMER_SRC="/opt/admin/configs/systemd/admin_backup.timer"

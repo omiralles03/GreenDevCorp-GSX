@@ -37,7 +37,7 @@ fi
 # Install the required packages
 #   Perfom apt update
 #   Parse the package status and install if not already installed
-PACKAGES=("sudo" "git" "nftables" "openssh-server" "vim")
+PACKAGES=("sudo" "git" "nftables" "openssh-server" "vim" "rsync")
 
 apt update >/dev/null
 for pkg in "${PACKAGES[@]}"; do
@@ -79,6 +79,7 @@ done
 for USER in "${ADMINS[@]}"; do
     DIR="/opt/$USER-admin"
     info "Creating Admin directory..."
+    #backup directory can be deleted but we keep it for private purposes
     mkdir -p "$DIR"/{scripts,backups,configs}
     chown -R root:sudo "$DIR"
     chmod -R 775 "$DIR"

@@ -1,25 +1,33 @@
 #!/bin/bash
 
 . "/usr/local/lib/gsx-messages.sh"
-set -e
+#set -e
+# we comment set -e to handle errors gracefully and log them instead of exiting immediately
 
-BACKUP_DIR="/opt/backups"
-SOURCE_DIR="/opt"
-DATE=$(date +%Y-%m-%d_%H%M%S)
-FILENAME="admins_backup_$DATE.tar.gz"
+# Mount the mirror inside NAS
+BACKUP_DIR="/mnt/external_nas"
+DATE=$(date +%Y-%m-%d__%H_%M_%S)
+FILE_NAME="server_backup_$DATE.tar.gz"
+SOURCE_DIRS=("/opt" "/home" "/etc" "/usr/local" "/root")
+LOG_FILE="/var/log/gsx_backups.log"
 
-# Crear directorio de destino si no existe
-mkdir -p "$BACKUP_DIR"
+# Ensure mount point is accessible
+if [ ! -d "$BACKUP_DIR" ] || [ ! -w "$BACKUP_DIR" ]; then
+    log_file "$LOG_FILE" "ERROR" "NAS mount $BACKUP_DIR is not writable or not mounted!"
+    error "NAS is not accessible!"
+fi
 
-info "Creating backup of admin directories in $BACKUP_DIR..."
+log_file "$LOG_FILE" "INFO" "Starting tar system backup from $SOURCE_DIR to $BACKUP_DIR..."
+info "Running full backup (tar) to Simulated NAS..."
 
-# Empaquetar con -p (preservar permisos) y -z (comprimir con gzip)
-tar -cvpzf "$BACKUP_DIR/$FILENAME" \
-    --exclude="$BACKUP_DIR" \
-    "$SOURCE_DIR"/*-admin
-
-if [ $? -eq 0 ]; then
-    success "Backup created successfully: $BACKUP_DIR/$FILENAME"
+# Run tar. Redirect stderr (2>&1) so any tar failures are logged.
+tar -czf "$BACKUP_DIR/$FILE_NAME" "${SOURCE_DIRS[@]}" "$BACKUP_DIR/" >> "$LOG_FILE" 2>&1
+# TAR return 0 if successful, 1 if it have warnings, or any other value if an error occurred.
+TAR_EXIT_CODE=$?
+if [ $TAR_EXIT_CODE -eq 0 ] || [ $TAR_EXIT_CODE -eq 1 ]; then
+    log_file "$LOG_FILE" "SUCCESS" "Tar backup completed successfully at $BACKUP_DIR/$FILE_NAME"
+    success "Backup created successfully on NAS"
 else
+    log_file "$LOG_FILE" "ERROR" "tar command failed during execution"
     error "Failed to create backup"
 fi

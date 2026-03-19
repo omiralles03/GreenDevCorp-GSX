@@ -18,24 +18,24 @@ VM_PASS=${VM_PASS:-admin}
 
 echo "--- Verification ---"
 
-# 1. Verificar usuarios y grupos
+# 1. Verify users and groups
 check "id -u $VM_USER1" "User $VM_USER1 exists"
 check "id -u $VM_USER2" "User $VM_USER2 exists"
 # Review this line...
 check "grep -q '^sudo:' /etc/group | grep -q '$VM_USER1\|$VM_USER2'" "Users are in sudo group"
 
-# 2. Verificar estructura de directorios de administración
+# 2. Verify admin directory structure
 for USER in "$VM_USER1" "$VM_USER2"; do
     check "[ -d /opt/$USER-admin/scripts ]" "Directory for $USER exists"
     check "[ -d /opt/$USER-admin/backups ]" "Directory for $USER exists"
     check "[ -w /opt/$USER-admin ]" "The dirctory /opt/$USER-admin is writable by $USER"
 done
 
-# 3. Verificar configuración de SSH
-check "grep -q 'PasswordAuthentication no' /etc/ssh/sshd_config" "Password authentication desactivated"
+# 3. Verify SSH configuration
+check "grep -q 'PasswordAuthentication no' /etc/ssh/sshd_config" "Password authentication disabled"
 check "grep -q 'PermitRootLogin no' /etc/ssh/sshd_config" "Login as root desactivated"
 
-# 4. Verificar llaves SSH inyectadas
+# 4. Verify injected SSH keys
 for USER in "$VM_USER1" "$VM_USER2"; do
     check "[ -f /home/$USER/.ssh/authorized_keys ]" "Public key injected for $USER"
     check "[ $(stat -c %a /home/$USER/.ssh/authorized_keys) -eq 600 ]" "Correct permissions in authorized_keys for $USER"

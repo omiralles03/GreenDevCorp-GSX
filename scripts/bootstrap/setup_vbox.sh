@@ -27,6 +27,7 @@ ISO_PATH=${ISO_PATH}
 DISK_SIZE=${DISK_SIZE:-20480}
 SHARED_PATH=${SHARED_PATH}
 HOST_NAME=${HOST_NAME:-gsx.virtualbox.org}
+BACKUPS_PATH=${BACKUPS_PATH}
 
 # Define the search pattern for ISO file
 # Find the most recent matching file
@@ -74,6 +75,11 @@ vrun createvm --name "$VM_NAME" --ostype "Debian_64" --register
 if [ ! -d "$SHARED_PATH" ]; then
     error "Shared folder path $SHARED_PATH does not exist"
 fi
+# Shared Folder for Backups (Simulated NAS)
+if [ ! -d "$BACKUPS_PATH" ]; then
+    warning "Backups path $BACKUPS_PATH does not exist. Creating it on Host..."
+    mkdir -p "$BACKUPS_PATH"
+fi
 
 while ss -tuln | grep -q ":$H_PORT "; do
     log "Port $H_PORT taken, trying $((H_PORT + 1))..."
@@ -105,6 +111,9 @@ vrun storageattach "$VM_NAME" \
 vrun storageattach "$VM_NAME" \
     --storagectl "SATA Controller" --port 1 --device 0 \
     --type dvddrive --medium "$ISO_PATH"
+
+log "Attaching Simulated NAS (Shared Folder)..."
+vrun sharedfolder add "$VM_NAME" --name "gsx_backups" --hostpath "$BACKUPS_PATH"
 
 log "Starting Unattended Installation (Headless)..."
 vrun unattended install "$VM_NAME" \
