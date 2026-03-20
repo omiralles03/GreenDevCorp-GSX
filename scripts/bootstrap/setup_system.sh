@@ -110,6 +110,21 @@ for key_file in "$KEY_DIR"/*.pub; do
     chmod 600 /home/$TARGET_USER/.ssh/authorized_keys
 done
 
+KB_CAT=${KB_CAT:-0}
+if [ "$KB_CAT" -eq 1 ]; then
+    # ---- TECLADO CATALÁN ----
+    info "Configuring Catalan keyboard layout..."
+
+    # Modificamos el archivo de configuración del teclado de Debian
+    sed -i 's/XKBLAYOUT=.*/XKBLAYOUT="es"/' /etc/default/keyboard
+    sed -i 's/XKBVARIANT=.*/XKBVARIANT="cat"/' /etc/default/keyboard
+
+    # Aplicamos los cambios a la consola en vivo sin necesidad de reiniciar
+    setupcon &>/dev/null || true
+
+    success "Keyboard set to es-cat successfully."
+fi
+
 /bin/bash /tmp/gsx-bootstrap/scripts/bootstrap/ssh_setup.sh
 
 success "SETUP COMPLETED"
