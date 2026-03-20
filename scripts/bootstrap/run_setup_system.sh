@@ -125,4 +125,7 @@ vrun guestcontrol "$VM_NAME" run \
     --exe "//bin/bash" -- -c "echo '$VM_PASS' | su -c 'passwd -l root'"
 
 echo -e
+
+VBoxManage snapshot "debian-gsx" take "Clean setup" --description "Estado limpio tras instalar servicios"
+
 success "System setup completed successfully!"
