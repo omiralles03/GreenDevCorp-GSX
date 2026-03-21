@@ -13,5 +13,7 @@ bash "/tmp/gsx-bootstrap/scripts/services/setup_admins_backups.sh"
 # ---- Limitd ----
 bash "/tmp/gsx-bootstrap/scripts/services/setup_limitd.sh"
 
-success "Services setup completed successfully."
+# ---- Storage ----
+bash "/tmp/gsx-bootstrap/scripts/services/setup_storage.sh"
 
+success "Services setup completed successfully."
