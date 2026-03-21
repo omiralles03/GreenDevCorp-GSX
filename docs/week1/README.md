@@ -93,3 +93,22 @@ This weeks objectives were:
    chmod +x scripts/*.sh
    ./scripts/DESIRED_SCRIPT.sh
    ```
+## Hints and Questions to Guide Your Thinking
+
+* **What are the security implications of using passwords vs. keys for SSH?**
+
+   SSH keys are impossible to decrypt by burte force compared to regular passwords, and so, enabling `PasswordAuthentication` allows us to harden the security. With the naming convention for the keys we can also identify who and which deviced was used to establish the connection.
+  
+* **If you have to reinstall the system, can your scripts restore the entire configuration? If not, what’s
+missing?**
+
+   With our `setup_vbox.sh` and `run_setup_system.sh` we are able to replicate the work environment in just a few minutes on any machine. The only thing that is left are backups and user generated files.
+
+* **How would you prevent both team members from accidentally running the same setup script at the
+same time?**
+
+   We would probably use a lock file that would verify if the file exist and stop the installation processes for the new process that would have invoked it.
+
+* **What information should be in Git, and what should only live on the server (why)?**
+
+   On Git we would have anything code-related like scripts, config files, documents... In the server, only secret keys or passwords and local files like logs, backups or user generated files that are not part of the core architecture of the server.
