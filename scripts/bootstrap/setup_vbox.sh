@@ -66,6 +66,9 @@ if VBoxManage list vms | grep -q "\"$VM_NAME\""; then
         vrun controlvm "$VM_NAME" poweroff
     fi
     vrun unregistervm "$VM_NAME" --delete
+
+    VBoxManage closemedium disk "$HOME/VirtualBox VMs/$VM_NAME/$VM_NAME.vdi" --delete || true
+    VBoxManage closemedium disk "$HOME/VirtualBox VMs/$VM_NAME/$VM_NAME-storage.vdi" --delete || true
     log "Removed old VM '$VM_NAME'."
 fi
 vrun createvm --name "$VM_NAME" --ostype "Debian_64" --register
@@ -92,10 +95,13 @@ vrun modifyvm "$VM_NAME" \
 log "Attaching Storage..."
 
 vrun storagectl "$VM_NAME" --name "SATA Controller" --add sata \
-    --controller IntelAhci --portcount 2
+    --controller IntelAhci --portcount 3
 
 vrun createmedium disk --filename "$HOME/VirtualBox VMs/$VM_NAME/$VM_NAME.vdi" \
     --size "$DISK_SIZE" --format VDI
+
+vrun createmedium disk --filename "$HOME/VirtualBox VMs/$VM_NAME/$VM_NAME-storage.vdi" \
+    --size 5120 --format VDI
 
 vrun storageattach "$VM_NAME" \
     --storagectl "SATA Controller" --port 0 --device 0 \
@@ -104,6 +110,11 @@ vrun storageattach "$VM_NAME" \
 
 vrun storageattach "$VM_NAME" \
     --storagectl "SATA Controller" --port 1 --device 0 \
+    --type hdd --nonrotational on \
+    --medium "$HOME/VirtualBox VMs/$VM_NAME/$VM_NAME-storage.vdi"
+
+vrun storageattach "$VM_NAME" \
+    --storagectl "SATA Controller" --port 2 --device 0 \
     --type dvddrive --medium "$ISO_PATH"
 
 log "Starting Unattended Installation (Headless)..."
@@ -164,13 +175,9 @@ info "Creating snapshot..."
 VBoxManage snapshot "$VM_NAME" take "Clean Install" --description "Clean state post-install"
 
 # --- Automatic handover to next script ---
-if [ -f "./run_setup_system.sh" ]; then
+if [ -f "$BASE_DIR/run_setup_system.sh" ]; then
     info "Launching system configuration script..."
-    ./run_setup_system.sh
+    ./$BASE_DIR/run_setup_system.sh
 else
     error "run_setup_system.sh not found!"
 fi
-
-info "Creating snapshot..."
-VBoxManage snapshot "$VM_NAME" take "Clean setup" --description "Clean setup state"
-
