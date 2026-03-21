@@ -8,7 +8,7 @@ if [ "$EUID" -ne 0 ]; then
     error "Usage: su -c ./setup_system.sh"
 fi
 
-info "Configuring Backup Systemd Timer..."
+info "--- CONFIGURING BACKUP SYSTEMD TIMER ---"
 
 SERVICE_SRC="/opt/admin/configs/systemd/admin_backup.service"
 TIMER_SRC="/opt/admin/configs/systemd/admin_backup.timer"
@@ -33,4 +33,20 @@ if systemctl is-active --quiet admin_backup.timer; then
     success "Backup timer is active and scheduled."
 else
     error "Failed to start backup timer."
+fi
+
+# ---- LOGROTATE ----
+
+info "--- CONFIGURING LOGROTATE FOR BACKUPS ---"
+
+LOGROTATE_SRC="/opt/admin/configs/logrotate/gsx_backups"
+LOGROTATE_DEST="/etc/logrotate.d/gsx_backups"
+
+if [ -f "$LOGROTATE_SRC" ]; then
+    run_command cp "$LOGROTATE_SRC" "$LOGROTATE_DEST"
+    run_command chown root:root "$LOGROTATE_DEST"
+    run_command chmod 644 "$LOGROTATE_DEST"
+    log "Logrotate configuration installed at $LOGROTATE_DEST"
+else
+    warning "Could not find logrotate config at $LOGROTATE_SRC"
 fi

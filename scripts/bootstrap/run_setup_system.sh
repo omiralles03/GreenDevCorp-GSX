@@ -69,10 +69,11 @@ vrun guestcontrol "$VM_NAME" run \
     --exe "//bin/bash" -- -c "echo '$VM_PASS' | su -c 'bash //tmp/gsx-bootstrap/scripts/bootstrap/setup_system.sh'"
 success "System setup_system executed successfully."
 
-vrun guestcontrol "$VM_NAME" run \
-    --username "$VM_USER1" --password "$VM_PASS" \
-    --exe "//bin/bash" -- -c "echo '$VM_PASS' | su -c 'bash //tmp/gsx-bootstrap/scripts/bootstrap/backups.sh'"
-success "System setup backups executed successfully."
+# Rsync backups 
+#vrun guestcontrol "$VM_NAME" run \
+#    --username "$VM_USER1" --password "$VM_PASS" \
+#    --exe "//bin/bash" -- -c "echo '$VM_PASS' | su -c 'bash //tmp/gsx-bootstrap/scripts/bootstrap/service_backups.sh'"
+#success "System setup backups executed successfully."
 
 # ----- COPY FILES TO ADMIN DIRECTORIES -----
 echo -n
@@ -124,4 +125,7 @@ vrun guestcontrol "$VM_NAME" run \
     --exe "//bin/bash" -- -c "echo '$VM_PASS' | su -c 'passwd -l root'"
 
 echo -e
+
+VBoxManage snapshot "debian-gsx" take "Clean setup" --description "Estado limpio tras instalar servicios"
+
 success "System setup completed successfully!"
