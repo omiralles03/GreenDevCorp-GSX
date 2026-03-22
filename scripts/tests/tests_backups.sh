@@ -2,7 +2,7 @@
 . "/usr/local/lib/gsx-messages.sh"
 
 if [ "$EUID" -ne 0 ]; then
-    error "Usage: sudo ./test_backups.sh"
+    error "Usage: sudo ./tests_backups.sh"
 fi
 
 BACKUP_DIR="/mnt/backups"
@@ -36,7 +36,8 @@ fi
 
 info "Verifying presence of critical directories..."
 MISSING=0
-CRITICAL_DIRS=("opt" "etc" "home" "root" "usr/local")
+
+CRITICAL_DIRS=("opt" "etc" "home" "root" "usr/local" "var")
 
 for dir in "${CRITICAL_DIRS[@]}"; do
     if [ -d "$RESTORE_DIR/$dir" ]; then

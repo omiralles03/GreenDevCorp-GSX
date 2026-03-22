@@ -186,7 +186,7 @@ VBoxManage snapshot "$VM_NAME" take "Clean Install" --description "Clean state p
 # --- Automatic handover to next script ---
 if [ -f "$BASE_DIR/run_setup_system.sh" ]; then
     info "Launching system configuration script..."
-    ./$BASE_DIR/run_setup_system.sh
+    "$BASE_DIR/run_setup_system.sh"
 else
     error "run_setup_system.sh not found!"
 fi
