@@ -7,7 +7,7 @@
 BACKUP_DIR="/mnt/backups"
 DATE=$(date +%Y-%m-%d__%H_%M_%S)
 FILE_NAME="server_backup_$DATE.tar.gz"
-SOURCE_DIRS=("/opt" "/home" "/etc" "/usr/local" "/root")
+SOURCE_DIRS=("/opt" "/home" "/etc" "/usr/local" "/root" "/var")
 LOG_FILE="/var/log/gsx_backups.log"
 
 if [ ! -d "$BACKUP_DIR" ] || [ ! -w "$BACKUP_DIR" ]; then
@@ -15,11 +15,18 @@ if [ ! -d "$BACKUP_DIR" ] || [ ! -w "$BACKUP_DIR" ]; then
     error "Backup drive is not accessible!"
 fi
 
-log_file "$LOG_FILE" "INFO" "Starting tar system backup from $SOURCE_DIR to $BACKUP_DIR..."
+log_file "$LOG_FILE" "INFO" "Starting tar system backup from $SOURCE_DIRS to $BACKUP_DIR..."
 info "Running full backup (tar) to Simulated NAS..."
 
 # Run tar. Redirect stderr (2>&1) so any tar failures are logged.
-tar -czf "$BACKUP_DIR/$FILE_NAME" "${SOURCE_DIRS[@]}" "$BACKUP_DIR/" >> "$LOG_FILE" 2>&1
+tar -czf "$BACKUP_DIR/$FILE_NAME" \
+    --exclude="/var/tmp" \
+    --exclude="/var/run" \
+    --exclude="/var/cache" \
+    --exclude="/var/lib/apt/lists" \
+    --exclude="/home/*/.cache" \
+    --exclude="/root/.cache" \
+    "${SOURCE_DIRS[@]}" "$BACKUP_DIR/" >> "$LOG_FILE" 2>&1
 
 # TAR return 0 if successful, 1 if it have warnings, or any other value if an error occurred.
 TAR_EXIT_CODE=$?

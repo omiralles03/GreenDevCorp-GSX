@@ -2,15 +2,13 @@
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$BASE_DIR/../core/messages.sh"
 
-# Loading .env params
-ENV_FILE="$BASE_DIR/../core/.env"
-if [ -f "$ENV_FILE" ]; then
-    log "Sourcing $ENV_FILE..."
-    source "$ENV_FILE"
-else
-    log "No .env found, using internal defaults."
-fi
+# Calculamos la ruta correcta hacia la carpeta bootstrap desde tests
+TARGET_SCRIPT="$BASE_DIR/../bootstrap/run_setup_system.sh"
 
-vrun guestcontrol "$VM_NAME" run \
-    --username "$VM_USER1" --password "$VM_PASS" \
-    --exe "//bin/bash" -- -c "echo '$VM_PASS' | sudo -S bash /opt/admin/scripts/tests/verification_w4.sh"
+# --- Automatic handover to next script ---
+if [ -f "$TARGET_SCRIPT" ]; then
+    info "Launching system configuration script..."
+    "$TARGET_SCRIPT"
+else
+    error "run_setup_system.sh not found in $TARGET_SCRIPT!"
+fi

@@ -2,11 +2,11 @@
 
 This weeks objectives were:
 
-1. Remote Access: enable remote access via SSH for administration.
-2. Privilege Escalation: structure admin users privileges and disable root access.
-3. Version Control: use Git to track system configuration.
-4. Automation: write shell scripts that set up the administrative environment, securing safety and repetability.
-5. Documentation: display the decisions we made and why.
+1. **Remote Access:** enable remote access via SSH for administration.
+2. **Privilege Escalation:** structure admin users privileges and disable root access.
+3. **Version Control:** use Git to track system configuration.
+4. **Automation:** write shell scripts that set up the administrative environment, securing safety and repetability.
+5. **Documentation:** display the decisions we made and why.
 
 ## Project Architecture
 

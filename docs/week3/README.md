@@ -2,14 +2,14 @@
 
 This weeks objectives were:
 
-1. Process Inspection: How do you discover what’s running on a system? Where do you look, and
+1. **Process Inspection:** How do you discover what’s running on a system? Where do you look, and
 what tools are available?
-2. Resource Usage: How do you identify which processes consume CPU, memory, or I/O? What’s
+2. **Resource Usage:** How do you identify which processes consume CPU, memory, or I/O? What’s
 normal, and what’s concerning?
-3. Process Control: How do you influence process behavior (pause, resume, kill, change priority)
+3. **Process Control:** How do you influence process behavior (pause, resume, kill, change priority)
 without rebooting?
-4. Resource Limits: How do you prevent one runaway process from taking down the entire system?
-5. Service Resilience: How can your service (from Week 2) signal gracefully and handle resource
+4. **Resource Limits:** How do you prevent one runaway process from taking down the entire system?
+5. **Service Resilience:** How can your service (from Week 2) signal gracefully and handle resource
 constraints?
 
 ## Project Architecture
