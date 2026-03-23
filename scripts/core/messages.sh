@@ -16,6 +16,13 @@ error() {
 info() { echo -e "${B}[INFO]${NC} $1\n"; }
 success() { echo -e "${G}[SUCCESS]${NC} $1\n"; }
 warning() { echo -e "${Y}[WARNING]${NC} $1\n"; }
+# Function to write to logs
+log_file() {
+    local file=$1
+    local type=$2
+    local message=$3
+    echo "[$(date +%T)] [$type]: $message" >> "$file"
+}
 
 # Wrapper for VBoxManage
 vrun() {
@@ -39,3 +46,5 @@ run_command() {
         log "$out" | grep -v "0%...10%" || true
     fi
 }
+
+

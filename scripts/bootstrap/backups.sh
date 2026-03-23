@@ -1,4 +1,6 @@
 #!/bin/bash
+# FILE NOT IN USE, WE USE SERVICE_BACKUPS.SH INSTEAD, 
+# THIS IS JUST A PROOF OF CONCEPT FOR THE BACKUP SYSTEM
 
 . "/tmp/gsx-bootstrap/scripts/core/messages.sh"
 set -e

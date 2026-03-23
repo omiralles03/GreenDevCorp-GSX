@@ -4,6 +4,9 @@ set -e
 
 info "Starting services setup inside the VM..."
 
+# ---- Storage ----
+bash "/tmp/gsx-bootstrap/scripts/services/setup_storage.sh"
+
 # ---- NGINX ---
 bash "/tmp/gsx-bootstrap/scripts/services/setup_nginx.sh"
 
@@ -13,5 +16,7 @@ bash "/tmp/gsx-bootstrap/scripts/services/setup_admins_backups.sh"
 # ---- Limitd ----
 bash "/tmp/gsx-bootstrap/scripts/services/setup_limitd.sh"
 
-success "Services setup completed successfully."
+# ---- NFS Server ----
+bash "/tmp/gsx-bootstrap/scripts/services/setup_nfs_server.sh"
 
+success "Services setup completed successfully."

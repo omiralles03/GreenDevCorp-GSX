@@ -37,7 +37,7 @@ fi
 # Install the required packages
 #   Perfom apt update
 #   Parse the package status and install if not already installed
-PACKAGES=("sudo" "git" "nftables" "openssh-server" "vim")
+PACKAGES=("sudo" "git" "nftables" "openssh-server" "vim" "rsync")
 
 apt update >/dev/null
 for pkg in "${PACKAGES[@]}"; do
@@ -79,6 +79,7 @@ done
 for USER in "${ADMINS[@]}"; do
     DIR="/opt/$USER-admin"
     info "Creating Admin directory..."
+    #backup directory can be deleted but we keep it for private purposes
     mkdir -p "$DIR"/{scripts,backups,configs}
     chown -R root:sudo "$DIR"
     chmod -R 775 "$DIR"
@@ -108,6 +109,21 @@ for key_file in "$KEY_DIR"/*.pub; do
     chmod 700 /home/$TARGET_USER/.ssh
     chmod 600 /home/$TARGET_USER/.ssh/authorized_keys
 done
+
+KB_CAT=${KB_CAT:-0}
+if [ "$KB_CAT" -eq 1 ]; then
+    # ---- TECLADO CATALÁN ----
+    info "Configuring Catalan keyboard layout..."
+
+    # Modificamos el archivo de configuración del teclado de Debian
+    sed -i 's/XKBLAYOUT=.*/XKBLAYOUT="es"/' /etc/default/keyboard
+    sed -i 's/XKBVARIANT=.*/XKBVARIANT="cat"/' /etc/default/keyboard
+
+    # Aplicamos los cambios a la consola en vivo sin necesidad de reiniciar
+    setupcon &>/dev/null || true
+
+    success "Keyboard set to es-cat successfully."
+fi
 
 /bin/bash /tmp/gsx-bootstrap/scripts/bootstrap/ssh_setup.sh
 

@@ -10,7 +10,7 @@ if ! id "$TEST_USER" &>/dev/null; then
     error "User $TEST_USER does not exist. Run the setup first."
 fi
 test = '0' # Counter for passed tests
-# ---- TEST DE PERMISOS (Access Control) ----
+# ---- ACCESS TESTS (Access Control) ----
 
 info "--- Testing Access Control ---"
 
@@ -42,11 +42,11 @@ else
     warning "done.log permissions incorrect: $LOG_PERMS / $LOG_OWNER"
 fi
 
-# ---- TEST DE LÍMITES (Resource Limits) ----
+# ---- LIMITS TESTS (Resource Limits) ----
 
 info "--- Testing Resource Limits (PAM) ---"
 
-# Hacemos su - dev1 y usamos ulimit para ver sus límites reales (Hard)
+# Switch to dev1 and use ulimit to check hard limits
 # -Hu = Hard max user processes
 # -Hn = Hard max open files
 
@@ -67,11 +67,11 @@ else
     warning "Max open files limit failed: $MAX_FILES"
 fi
 
-# ---- TEST DE ENTORNO (Environment Personalization) ----
+# ---- ENVIRONMENT TEST (Environment Personalization) ----
 
 info "--- Testing Environment Inheritance ---"
 
-# Comprobamos si el PATH de dev1 tiene la carpeta bin compartida
+# Check if dev1 PATH contains shared bin folder
 USER_PATH=$(su - "$TEST_USER" -c "echo \$PATH")
 if echo "$USER_PATH" | grep -q "/home/greendevcorp/bin"; then
     success "PATH inherited correctly: contains /home/greendevcorp/bin"
@@ -80,7 +80,7 @@ else
     warning "PATH inheritance failed."
 fi
 
-# Comprobamos si los alias se han cargado correctamente
+# Check aliases loaded correctly
 USER_ALIASES=$(su - "$TEST_USER" -c "alias")
 if echo "$USER_ALIASES" | grep -q "shared="; then
     success "Aliases inherited correctly "
